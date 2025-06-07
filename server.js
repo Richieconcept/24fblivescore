@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 5000;
 
 // CORS middleware
 app.use(cors({
-  origin: 'http://localhost:5176', // React app's local server
+  origin: 'http://localhost:5173', // React app's local server
   methods: 'GET,POST,PUT,DELETE',
 }));
 
