@@ -51,7 +51,7 @@ export async function scheduledMatchesController(req, res) {
     const { date } = req.query;  // e.g. 2025-06-07
 
     const matches = await getScheduledMatches(date);
-
+    
     res.status(200).json(matches);
   } catch (error) {
     console.error('[Controller] Error fetching scheduled matches:', error.message);
