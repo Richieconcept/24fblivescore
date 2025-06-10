@@ -17,10 +17,9 @@ const PORT = process.env.PORT || 5000;
 
 
 //============ CORS middleware=====================
-
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://24-f-blivescore-b66d.vercel.app/'
+  'https://24-f-blivescore-b66d.vercel.app'
 ];
 
 app.use(cors({
