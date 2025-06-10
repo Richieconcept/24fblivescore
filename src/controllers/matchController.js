@@ -1,8 +1,8 @@
-import { getLiveMatches } from '../services/footballService.js';
+import { getLiveMatches } from '../services/footballServices/basicDataDisplay.js';
 import { CACHE_TTL } from '../config/constants.js'; // Add this line
-import { getScheduledMatches, getAllMatches, getFinishedMatches } from '../services/footballService.js';
+import { getScheduledMatches, getAllMatches, getFinishedMatches, getMatchDetails,} from '../services/footballServices/basicDataDisplay.js';
 import cache from 'memory-cache';
-import { format } from 'date-fns'; // Optional, for consistent date formatting
+import { format } from 'date-fns'; 
 
 // export async function fetchLiveMatches(req, res) {
 //   try {
@@ -147,3 +147,31 @@ export const getFinishedMatchesController = async (req, res) => {
     res.status(500).json({ error: 'Failed to retrieve finished matches' });
   }
 };
+
+
+
+
+
+
+
+
+// ====================Get Full matches details like lineups, stats, and others starts here======================
+
+// import { getMatchDetails } from '../services/footballServices/matchDetails.js';
+
+export async function getMatchDetailsController(req, res) {
+  const { fixtureId } = req.query;
+
+  if (!fixtureId) {
+    return res.status(400).json({ success: false, error: 'Missing fixtureId in query' });
+  }
+
+  try {
+    const data = await getMatchDetails(fixtureId);
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    console.error('[Controller] Match detail error:', error.message);
+    res.status(500).json({ success: false, message: 'Failed to fetch match details' });
+  }
+}
+

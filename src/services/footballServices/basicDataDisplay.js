@@ -382,3 +382,58 @@ export async function getFinishedMatches(date) {
     throw new Error('Failed to fetch finished matches.');
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+export async function getMatchDetails(fixtureId) {
+  try {
+    const [overviewRes, lineupRes, statsRes, oddsRes] = await Promise.all([
+      api.get('/fixtures', { params: { id: fixtureId } }),
+      api.get('/fixtures/lineups', { params: { fixture: fixtureId } }),
+      api.get('/fixtures/statistics', { params: { fixture: fixtureId } }),
+      api.get('/odds', { params: { fixture: fixtureId } })
+    ]);
+
+    const overviewData = overviewRes.data?.response?.[0];
+    if (!overviewData) throw new Error('Fixture not found');
+
+    const team1Id = overviewData.teams.home.id;
+    const team2Id = overviewData.teams.away.id;
+
+    const h2hRes = await api.get('/fixtures/headtohead', {
+      params: { h2h: `${team1Id}-${team2Id}`, last: 5 }
+    });
+
+    return {
+      fixture: {
+        id: fixtureId,
+        date: overviewData.fixture.date,
+        venue: overviewData.fixture.venue,
+        status: overviewData.fixture.status,
+        teams: overviewData.teams,
+        goals: overviewData.goals,
+        score: overviewData.score,
+        league: overviewData.league,
+        events: overviewData.events || [],
+      },
+      lineups: lineupRes.data?.response || [],
+      statistics: statsRes.data?.response || [],
+      odds: oddsRes.data?.response?.[0] || null,
+      h2h: h2hRes.data?.response || []
+    };
+
+  } catch (error) {
+    console.error('[getMatchDetails] Error:', error.message);
+    throw new Error('Failed to fetch match details');
+  }
+}

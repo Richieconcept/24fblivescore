@@ -1,6 +1,7 @@
 import express from 'express';
 import { getLiveMatchesController, getScheduledMatchesController,  fetchAllMatchesController, 
-    getFinishedMatchesController, } from '../controllers/matchController.js';
+    getFinishedMatchesController, getMatchDetailsController, } from '../controllers/matchController.js';
+
 
 const router = express.Router();
 
@@ -10,6 +11,9 @@ router.get('/live', getLiveMatchesController,);
 router.get('/scheduled-matches', getScheduledMatchesController);
 router.get('/all-matches', fetchAllMatchesController);
 router.get('/finished', getFinishedMatchesController);
+router.get('/match-details', getMatchDetailsController);
+
+
 
 
 
