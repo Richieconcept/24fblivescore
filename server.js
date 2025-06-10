@@ -16,24 +16,13 @@ const PORT = process.env.PORT || 5000;
 
 
 
-// ==========================CORS middleware===========================
-
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://24-f-blivescore-b66d.vercel.app/'
-];
+// CORS middleware
 
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow non-browser tools like Postman
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: 'https://24-f-blivescore-b66d.vercel.app/', // React app's local server
   methods: 'GET,POST,PUT,DELETE',
 }));
+
 
 // -======================= API ROUTING======================================
 app.use('/matches', matchRoutes);
