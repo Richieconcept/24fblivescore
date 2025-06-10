@@ -392,44 +392,54 @@ export async function getFinishedMatches(date) {
 
 
 
-
+// =====================================Get all matches  details like lineups, stats, odds, H2H. starts here =======================================
 
 
 export async function getMatchDetails(fixtureId) {
   try {
+    // Fetch core data in parallel
     const [overviewRes, lineupRes, statsRes, oddsRes] = await Promise.all([
       api.get('/fixtures', { params: { id: fixtureId } }),
       api.get('/fixtures/lineups', { params: { fixture: fixtureId } }),
       api.get('/fixtures/statistics', { params: { fixture: fixtureId } }),
-      api.get('/odds', { params: { fixture: fixtureId } })
+      api.get('/odds', { params: { fixture: fixtureId } }),
     ]);
 
     const overviewData = overviewRes.data?.response?.[0];
     if (!overviewData) throw new Error('Fixture not found');
 
-    const team1Id = overviewData.teams.home.id;
-    const team2Id = overviewData.teams.away.id;
+    const team1Id = overviewData.teams?.home?.id;
+    const team2Id = overviewData.teams?.away?.id;
 
+    // Fetch head-to-head data
     const h2hRes = await api.get('/fixtures/headtohead', {
-      params: { h2h: `${team1Id}-${team2Id}`, last: 5 }
+      params: { h2h: `${team1Id}-${team2Id}`, last: 5 },
     });
+
+    const statusCode = overviewData.fixture?.status?.short || '';
+    const statusFlags = {
+      isLive: ['1H', '2H', 'ET', 'P'].includes(statusCode),
+      isFinished: ['FT', 'AET', 'PEN'].includes(statusCode),
+      isUpcoming: statusCode === 'NS',
+    };
 
     return {
       fixture: {
         id: fixtureId,
-        date: overviewData.fixture.date,
-        venue: overviewData.fixture.venue,
-        status: overviewData.fixture.status,
-        teams: overviewData.teams,
-        goals: overviewData.goals,
-        score: overviewData.score,
-        league: overviewData.league,
-        events: overviewData.events || [],
+        date: overviewData.fixture?.date,
+        venue: overviewData.fixture?.venue || {},
+        status: overviewData.fixture?.status || {},
+        teams: overviewData.teams || {},
+        goals: overviewData.goals || {},
+        score: overviewData.score || {},
+        league: overviewData.league || {},
+        events: overviewData.events || [], // Note: might be undefined if not available
       },
       lineups: lineupRes.data?.response || [],
       statistics: statsRes.data?.response || [],
       odds: oddsRes.data?.response?.[0] || null,
-      h2h: h2hRes.data?.response || []
+      h2h: h2hRes.data?.response || [],
+      statusFlags, // frontend can use this for logic display
     };
 
   } catch (error) {
