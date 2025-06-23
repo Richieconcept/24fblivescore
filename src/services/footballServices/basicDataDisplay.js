@@ -422,8 +422,10 @@ export async function getMatchDetails(fixtureId) {
 
     // Format lineups
     const allLineups = lineupRes.data?.response || [];
-    const homeLineupRaw = allLineups.find(item => item.team.id === team1Id);
-    const awayLineupRaw = allLineups.find(item => item.team.id === team2Id);
+
+    // 🛠 FIX: Ensure both IDs are numbers for comparison
+    const homeLineupRaw = allLineups.find(item => Number(item.team.id) === Number(team1Id));
+    const awayLineupRaw = allLineups.find(item => Number(item.team.id) === Number(team2Id));
 
     function formatLineup(raw) {
       if (!raw) return null;
