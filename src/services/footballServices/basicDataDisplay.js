@@ -393,11 +393,8 @@ export async function getFinishedMatches(date) {
 
 
 // =====================================Get all matches  details like lineups, stats, odds, H2H. starts here =======================================
-
-
 export async function getMatchDetails(fixtureId) {
   try {
-    // Fetch core data in parallel
     const [overviewRes, lineupRes, statsRes, oddsRes] = await Promise.all([
       api.get('/fixtures', { params: { id: fixtureId } }),
       api.get('/fixtures/lineups', { params: { fixture: fixtureId } }),
@@ -423,6 +420,35 @@ export async function getMatchDetails(fixtureId) {
       isUpcoming: statusCode === 'NS',
     };
 
+    // Format lineups
+    const allLineups = lineupRes.data?.response || [];
+    const homeLineupRaw = allLineups.find(item => item.team.id === team1Id);
+    const awayLineupRaw = allLineups.find(item => item.team.id === team2Id);
+
+    function formatLineup(raw) {
+      if (!raw) return null;
+
+      return {
+        team: raw.team,
+        formation: raw.formation,
+        coach: raw.coach || {},
+        startXI: (raw.startXI || []).map(p => ({
+          id: p.player.id,
+          name: p.player.name,
+          number: p.player.number,
+          position: p.player.pos,
+          photo: p.player.photo
+        })),
+        substitutes: (raw.substitutes || []).map(p => ({
+          id: p.player.id,
+          name: p.player.name,
+          number: p.player.number,
+          position: p.player.pos,
+          photo: p.player.photo
+        }))
+      };
+    }
+
     return {
       fixture: {
         id: fixtureId,
@@ -433,13 +459,16 @@ export async function getMatchDetails(fixtureId) {
         goals: overviewData.goals || {},
         score: overviewData.score || {},
         league: overviewData.league || {},
-        events: overviewData.events || [], // Note: might be undefined if not available
+        events: overviewData.events || [],
       },
-      lineups: lineupRes.data?.response || [],
+      lineups: {
+        home: formatLineup(homeLineupRaw),
+        away: formatLineup(awayLineupRaw),
+      },
       statistics: statsRes.data?.response || [],
       odds: oddsRes.data?.response?.[0] || null,
       h2h: h2hRes.data?.response || [],
-      statusFlags, // frontend can use this for logic display
+      statusFlags,
     };
 
   } catch (error) {
