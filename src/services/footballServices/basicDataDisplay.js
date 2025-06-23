@@ -422,8 +422,6 @@ export async function getMatchDetails(fixtureId) {
 
     // Format lineups
     const allLineups = lineupRes.data?.response || [];
-
-    // 🛠 FIX: Ensure both IDs are numbers for comparison
     const homeLineupRaw = allLineups.find(item => Number(item.team.id) === Number(team1Id));
     const awayLineupRaw = allLineups.find(item => Number(item.team.id) === Number(team2Id));
 
@@ -439,14 +437,14 @@ export async function getMatchDetails(fixtureId) {
           name: p.player.name,
           number: p.player.number,
           position: p.player.pos,
-          photo: p.player.photo
+          photo: p.player.photo || `https://media.api-sports.io/football/players/${p.player.id}.png`
         })),
         substitutes: (raw.substitutes || []).map(p => ({
           id: p.player.id,
           name: p.player.name,
           number: p.player.number,
           position: p.player.pos,
-          photo: p.player.photo
+          photo: p.player.photo || `https://media.api-sports.io/football/players/${p.player.id}.png`
         }))
       };
     }
@@ -476,5 +474,48 @@ export async function getMatchDetails(fixtureId) {
   } catch (error) {
     console.error('[getMatchDetails] Error:', error.message);
     throw new Error('Failed to fetch match details');
+  }
+}
+
+// ===================================----------== Get Player Info==================================================================
+// 🆕 Get Player Info
+export async function getPlayerInfo(playerId) {
+  try {
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth(); // Jan = 0, Dec = 11
+    const season = currentMonth >= 7 ? currentYear : currentYear - 1;
+
+    const response = await api.get('/players', {
+      params: {
+        id: playerId,
+        season,
+      }
+    });
+
+    const playerData = response.data?.response?.[0];
+    if (!playerData) throw new Error('Player not found');
+
+    const { player } = playerData;
+
+    return {
+      id: player.id,
+      name: player.name,
+      firstname: player.firstname,
+      lastname: player.lastname,
+      age: player.age,
+      birth: {
+        date: player.birth?.date,
+        place: player.birth?.place,
+        country: player.birth?.country,
+      },
+      nationality: player.nationality,
+      height: player.height,
+      weight: player.weight,
+      photo: player.photo,
+    };
+
+  } catch (error) {
+    console.error('[getPlayerInfo] Error:', error.message);
+    throw new Error('Failed to fetch player info');
   }
 }

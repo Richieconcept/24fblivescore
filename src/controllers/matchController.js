@@ -1,6 +1,6 @@
 import { getLiveMatches } from '../services/footballServices/basicDataDisplay.js';
 import { CACHE_TTL } from '../config/constants.js'; // Add this line
-import { getScheduledMatches, getAllMatches, getFinishedMatches, getMatchDetails,} from '../services/footballServices/basicDataDisplay.js';
+import { getScheduledMatches, getAllMatches, getFinishedMatches, getMatchDetails, getPlayerInfo, } from '../services/footballServices/basicDataDisplay.js';
 import cache from 'memory-cache';
 import { format } from 'date-fns'; 
 
@@ -172,6 +172,25 @@ export async function getMatchDetailsController(req, res) {
   } catch (error) {
     console.error('[Controller] Match detail error:', error.message);
     res.status(500).json({ success: false, message: 'Failed to fetch match details' });
+  }
+}
+
+
+// ===================================----------== Get Player Info==================================================================
+
+
+export async function getPlayerInfoController(req, res) {
+  try {
+    const { playerId } = req.query;
+
+    if (!playerId) {
+      return res.status(400).json({ error: 'playerId query param is required' });
+    }
+
+    const playerInfo = await getPlayerInfo(playerId);
+    res.json(playerInfo);
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Server error' });
   }
 }
 
